@@ -1,87 +1,121 @@
 // Broches du moteur 1
-const int motor1Pin1 = 3;  // Input1 du L293D pour contrôler le sens horaire du moteur 1
-const int motor1Pin2 = 4;  // Input2 du L293D pour contrôler le sens antihoraire du moteur 1
-const int enable1Pin = 5;  // Enable1 du L293D pour activer le moteur 1 (PWM)
+const int motor1Pin1 = 3;  // Input1 du L293D pour le moteur 1 3
+const int motor1Pin2 = 4;  // Input2 du L293D pour le moteur 1 4
+const int enable1Pin = 5;  // Enable1 du L293D pour le moteur 1 (PWM)5
 
 // Broches du moteur 2
-const int motor2Pin1 = 6;  // Input1 du L293D pour contrôler le sens horaire du moteur 2
-const int motor2Pin2 = 7;  // Input2 du L293D pour contrôler le sens antihoraire du moteur 2
-const int enable2Pin = 9;  // Enable2 du L293D pour activer le moteur 2 (PWM)
+const int motor2Pin1 = 6;  // Input1 du L293D pour le moteur 2 6 
+const int motor2Pin2 = 7;  // Input2 du L293D pour le moteur 2 7 
+const int enable2Pin = 9;  // Enable2 du L293D pour le moteur 2 (PWM)9  
 
-// Broche du capteur d'obstacle
-const int obstaclePin = 8; // Broche pour le capteur d'obstacle (entrée numérique)
+// Broches du capteur à ultrasons (HC-SR04)
+const int trigPin = 10; // Pin Trig du capteur
+const int echoPin = 11; // Pin Echo du capteur
 
 // Vitesse des moteurs
-int vitesse = 255; // Valeur maximale pour pleine vitesse
+int vitesse = 255;
+
+// Distance minimale pour considérer un obstacle (en cm)
+const int distanceSeuil = 15;
 
 void setup() {
   // Configurer les broches des moteurs comme sorties
-  pinMode(motor1Pin1, OUTPUT); // Contrôle du sens horaire du moteur 1
-  pinMode(motor1Pin2, OUTPUT); // Contrôle du sens antihoraire du moteur 1
-  pinMode(enable1Pin, OUTPUT); // Activation du moteur 1 avec PWM
+  pinMode(motor1Pin1, OUTPUT);
+  pinMode(motor1Pin2, OUTPUT);
+  pinMode(enable1Pin, OUTPUT);
 
-  pinMode(motor2Pin1, OUTPUT); // Contrôle du sens horaire du moteur 2
-  pinMode(motor2Pin2, OUTPUT); // Contrôle du sens antihoraire du moteur 2
-  pinMode(enable2Pin, OUTPUT); // Activation du moteur 2 avec PWM
+  pinMode(motor2Pin1, OUTPUT);
+  pinMode(motor2Pin2, OUTPUT);
+  pinMode(enable2Pin, OUTPUT);
 
-  // Configurer la broche du capteur comme entrée
-  pinMode(obstaclePin, INPUT); // Lecture de l'état du capteur d'obstacle
+  // Configurer les broches du capteur comme sorties/entrées
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
 
-  // Démarrer les moteurs en mode normal
+  // Initialiser la communication série pour le débogage
+  Serial.begin(9600);
+
+  // Démarrer les moteurs
   demarrerMoteurs();
 }
 
 void loop() {
-  // Vérifier si un obstacle est détecté
-  if (digitalRead(obstaclePin) == HIGH) { // HIGH indique la détection d'un obstacle
-    // Obstacle détecté - Reculer les moteurs
+  // Lire la distance à partir du capteur à ultrasons
+  int distance = mesurerDistance();
+
+  // Débogage : Afficher la distance mesurée
+  Serial.print("Distance mesurée : ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+  // Si un obstacle est détecté (distance inférieure au seuil)
+  if (distance <= distanceSeuil) {
+    // Reculer les deux moteurs
     reculer();
     delay(2000); // Pause de 2 secondes
 
-    // Faire tourner uniquement le moteur 1 pour changer de direction
+    // Faire tourner un seul moteur
     tournerUnSeulMoteur();
     delay(1000); // Pause de 1 seconde
 
-    // Revenir au mode normal avec les deux moteurs qui avancent
+    // Revenir au mode normal (avancer les deux moteurs)
     demarrerMoteurs();
   }
+}
+
+// Fonction pour mesurer la distance avec le capteur à ultrasons
+int mesurerDistance() {
+  // Envoyer une impulsion sur le Trig
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  // Lire la durée de l'impulsion Echo
+  long duree = pulseIn(echoPin, HIGH);
+
+  // Convertir la durée en distance (cm)
+  int distance = duree * 0.034 / 2;
+
+  return distance;
 }
 
 // Fonction pour faire avancer les deux moteurs (mode normal)
 void demarrerMoteurs() {
   // Faire avancer le moteur 1 (sens horaire)
-  digitalWrite(motor1Pin1, HIGH); // Sens horaire pour moteur 1
+  digitalWrite(motor1Pin1, HIGH);
   digitalWrite(motor1Pin2, LOW);
-  analogWrite(enable1Pin, vitesse); // Activer le moteur 1 avec la vitesse définie
+  analogWrite(enable1Pin, vitesse);
 
   // Faire avancer le moteur 2 (sens horaire)
-  digitalWrite(motor2Pin1, HIGH); // Sens horaire pour moteur 2
+  digitalWrite(motor2Pin1, HIGH);
   digitalWrite(motor2Pin2, LOW);
-  analogWrite(enable2Pin, vitesse); // Activer le moteur 2 avec la vitesse définie
+  analogWrite(enable2Pin, vitesse);
 }
 
-// Fonction pour faire reculer les deux moteurs
+// Fonction pour reculer les deux moteurs
 void reculer() {
   // Faire reculer le moteur 1 (sens antihoraire)
-  digitalWrite(motor1Pin1, LOW); // Sens antihoraire pour moteur 1
+  digitalWrite(motor1Pin1, LOW);
   digitalWrite(motor1Pin2, HIGH);
-  analogWrite(enable1Pin, vitesse); // Activer le moteur 1 avec la vitesse définie
+  analogWrite(enable1Pin, vitesse);
 
   // Faire reculer le moteur 2 (sens antihoraire)
-  digitalWrite(motor2Pin1, LOW); // Sens antihoraire pour moteur 2
+  digitalWrite(motor2Pin1, LOW);
   digitalWrite(motor2Pin2, HIGH);
-  analogWrite(enable2Pin, vitesse); // Activer le moteur 2 avec la vitesse définie
+  analogWrite(enable2Pin, vitesse);
 }
 
 // Fonction pour faire tourner uniquement le moteur 1
 void tournerUnSeulMoteur() {
   // Arrêter le moteur 2
-  digitalWrite(motor2Pin1, LOW); // Désactiver le sens horaire pour moteur 2
-  digitalWrite(motor2Pin2, LOW); // Désactiver le sens antihoraire pour moteur 2
-  analogWrite(enable2Pin, 0); // Arrêter le moteur 2
+  digitalWrite(motor2Pin1, LOW);
+  digitalWrite(motor2Pin2, LOW);
+  analogWrite(enable2Pin, 0);
 
   // Faire avancer le moteur 1 (sens horaire)
-  digitalWrite(motor1Pin1, HIGH); // Sens horaire pour moteur 1
+  digitalWrite(motor1Pin1, HIGH);
   digitalWrite(motor1Pin2, LOW);
-  analogWrite(enable1Pin, vitesse); // Activer le moteur 1 avec la vitesse définie
+  analogWrite(enable1Pin, vitesse);
 }
