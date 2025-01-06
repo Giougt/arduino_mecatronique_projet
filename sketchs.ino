@@ -1,11 +1,11 @@
 // Broches du moteur 1
-const int motor1Pin1 = 3;  // Input1 du L293D pour le moteur 1 3
-const int motor1Pin2 = 4;  // Input2 du L293D pour le moteur 1 4
+const int motor1Pin1 = 4;  // Input1 du L293D pour le moteur 1 3
+const int motor1Pin2 = 3;  // Input2 du L293D pour le moteur 1 4
 const int enable1Pin = 5;  // Enable1 du L293D pour le moteur 1 (PWM)5
 
 // Broches du moteur 2
-const int motor2Pin1 = 6;  // Input1 du L293D pour le moteur 2 6 
-const int motor2Pin2 = 7;  // Input2 du L293D pour le moteur 2 7 
+const int motor2Pin1 = 7;  // Input1 du L293D pour le moteur 2 6 
+const int motor2Pin2 = 6;  // Input2 du L293D pour le moteur 2 7 
 const int enable2Pin = 9;  // Enable2 du L293D pour le moteur 2 (PWM)9  
 
 // Broches du capteur à ultrasons (HC-SR04)
@@ -52,7 +52,7 @@ void loop() {
   if (distance <= distanceSeuil) {
     // Reculer les deux moteurs
     reculer();
-    delay(2000); // Pause de 2 secondes
+    delay(1000); // Pause de 2 secondes ****change
 
     // Faire tourner un seul moteur
     tournerUnSeulMoteur();
